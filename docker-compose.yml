@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/movies
+    volumes:
+      - ./backend:/app
+      - /app/target
+
+  frontend:
+    build: ./frontend/movie-gold-v1
+    container_name: frontend
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: http://backend:8080
+    volumes:
+      - ./frontend/movie-gold-v1:/app
+      - /app/node_modules
+
+volumes:
+  mongo_data:
